@@ -63,3 +63,17 @@ def create_assignment():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+@api.route("/assignments/<int:assignment_id>", methods=["DELETE"])
+def delete_assignment(assignment_id):
+    assignment = Assignment.query.get(assignment_id)
+    if not assignment:
+        return jsonify({"error": "Assignment not found"}), 404
+
+    try:
+        db.session.delete(assignment)
+        db.session.commit()
+        return jsonify({"message": "Assignment deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
