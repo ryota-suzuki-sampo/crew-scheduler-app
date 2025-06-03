@@ -40,7 +40,7 @@ async function loadAssignments(year, month) {
   const daysInMonth = getDaysInMonth(year, month);
   const res = await fetch("/assignments");
   const data = await res.json();
-
+  data.sort((a, b) => a.ship_id - b.ship_id);
   // 日付ヘッダー
   const headerRow = document.createElement("tr");
 
