@@ -1,14 +1,11 @@
 // static/app.js
 
-// 月の日数を取得
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-// 船名→色コードのマップ（後でAPIから取得）
 const shipColorMap = new Map();
 
-// 色情報を読み込み
 async function loadShipColors() {
   const res = await fetch("/ships");
   const ships = await res.json();
@@ -17,14 +14,12 @@ async function loadShipColors() {
   });
 }
 
-// 表の描画
-async function loadAssignments() {
+async function loadAssignments(year, month) {
   const table = document.getElementById("assignment-table");
-  const year = new Date().getFullYear();
-  const month = new Date().getMonth(); // 0-indexed
+  table.innerHTML = ""; // クリア
+
   const daysInMonth = getDaysInMonth(year, month);
 
-  // テーブルヘッダー
   const thead = table.createTHead();
   const headerRow = thead.insertRow();
   headerRow.insertCell().textContent = "船員名";
@@ -33,11 +28,9 @@ async function loadAssignments() {
     headerRow.insertCell().textContent = d;
   }
 
-  // データ取得
   const res = await fetch("/assignments");
   const data = await res.json();
 
-  // テーブル本体
   const tbody = table.createTBody();
   for (const item of data) {
     const row = tbody.insertRow();
@@ -59,8 +52,39 @@ async function loadAssignments() {
   }
 }
 
-// 初期化
+function setupSelectors() {
+  const yearSelect = document.getElementById("year-select");
+  const monthSelect = document.getElementById("month-select");
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    if (y === currentYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+
+  for (let m = 0; m < 12; m++) {
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = m + 1;
+    if (m === currentMonth) opt.selected = true;
+    monthSelect.appendChild(opt);
+  }
+
+  document.getElementById("reload-btn").addEventListener("click", () => {
+    const selectedYear = parseInt(yearSelect.value);
+    const selectedMonth = parseInt(monthSelect.value);
+    loadAssignments(selectedYear, selectedMonth);
+  });
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   await loadShipColors();
-  await loadAssignments();
+  setupSelectors();
+  const now = new Date();
+  loadAssignments(now.getFullYear(), now.getMonth());
 });
