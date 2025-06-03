@@ -42,6 +42,7 @@ def get_crew_members():
 @api.route("/assignments", methods=["POST"])
 def create_assignment():
     data = request.get_json()
+    print("POSTデータ:", data)  # ← 追加
 
     # 必須項目のチェック（簡易）
     required_fields = ["crew_id", "ship_id", "onboard_date", "status"]
