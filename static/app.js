@@ -62,6 +62,10 @@ async function loadAssignments(year, month) {
       const cellDate = new Date(year, month, d);
       const cell = document.createElement("td");
       cell.className = "assignment-cell";
+      const onboardStr = new Date(item.onboard_date).toISOString().split("T")[0];
+      const offboardStr = item.offboard_date
+        ? new Date(item.offboard_date).toISOString().split("T")[0]
+        : null;
       const cellStr = cellDate.toISOString().split("T")[0];
       cell.dataset.date = cellStr;
 
@@ -69,11 +73,11 @@ async function loadAssignments(year, month) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
 
         // 乗船日 or 下船日 の場合だけドラッグ許可
-        if (cellStr === item.onboard_date || cellStr === item.offboard_date) {
+        if (cellStr === onboardStr || cellStr === offboardStr) {
           cell.draggable = true;
           cell.addEventListener("dragstart", () => {
             draggedAssignment = item;
-            draggedType = (cellStr === item.onboard_date) ? "onboard" : "offboard";
+            draggedType = (cellStr === onboardStr) ? "onboard" : "offboard";
           });
         }
       }
