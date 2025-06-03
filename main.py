@@ -3,6 +3,11 @@ from dotenv import load_dotenv
 from flask import Flask
 from models import db
 
+print("=== DATABASE_URL ===")
+print(os.environ.get("DATABASE_URL"))
+print("====================")
+
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
