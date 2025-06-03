@@ -1,139 +1,89 @@
-// static/app.js
-
-// 月の日数を取得
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-let dragStartCell = null;
-let dragEndCell = null;
+const shipColors = {}; // ship_id -> color_code
 
-// 表の描画処理
-async function loadAssignments() {
-  const tableBody = document.getElementById("assignment-table-body");
-  const year = parseInt(document.getElementById("yearSelect").value);
-  const month = parseInt(document.getElementById("monthSelect").value) - 1;
+async function loadShipColors() {
+  const res = await fetch("/ships");
+  const data = await res.json();
+  data.forEach(ship => {
+    shipColors[ship.id] = ship.color_code;
+  });
+}
+
+async function loadAssignments(year, month) {
+  const tableHead = document.querySelector("#assignment-table thead");
+  const tableBody = document.querySelector("#assignment-table-body");
+
+  if (!tableHead || !tableBody) return;
+
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
+
   const daysInMonth = getDaysInMonth(year, month);
-
-  // データ取得
   const res = await fetch("/assignments");
   const data = await res.json();
 
-  // 行ごとに船員名・船名と配乗状況表示
-  tableBody.innerHTML = "";
-  for (const item of data) {
-    const row = document.createElement("tr");
+  // ヘッダー行
+  const headerRow = document.createElement("tr");
+  headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    headerRow.innerHTML += `<th>${d}</th>`;
+  }
+  tableHead.appendChild(headerRow);
 
-    const nameCell = document.createElement("td");
-    nameCell.textContent = item.crew_name;
-    row.appendChild(nameCell);
-
-    const shipCell = document.createElement("td");
-    shipCell.textContent = item.ship_name;
-    row.appendChild(shipCell);
-
+  // 各行
+  data.forEach(item => {
     const onboard = new Date(item.onboard_date);
     const offboard = item.offboard_date ? new Date(item.offboard_date) : null;
-    const color = item.color_code || "#dddddd";
-
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
     for (let d = 1; d <= daysInMonth; d++) {
-      const cell = document.createElement("td");
       const cellDate = new Date(year, month, d);
-      cell.dataset.crewName = item.crew_name;
-      cell.dataset.date = cellDate.toISOString().slice(0, 10);
-      cell.classList.add("assignment-cell");
-
-      // 配乗期間のセルを塗る
+      const cell = document.createElement("td");
       if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
-        cell.style.backgroundColor = color;
+        cell.style.backgroundColor = shipColors[item.ship_id] || "#ddd";
       }
-
-      // ドラッグ開始・終了検出
-      cell.addEventListener("mousedown", () => {
-        dragStartCell = cell;
-        dragEndCell = null;
-      });
-      cell.addEventListener("mouseover", () => {
-        if (dragStartCell) {
-          dragEndCell = cell;
-        }
-      });
-      cell.addEventListener("mouseup", () => {
-        if (dragStartCell && dragEndCell) {
-          handleDragSelection(dragStartCell, dragEndCell);
-          dragStartCell = null;
-          dragEndCell = null;
-        }
-      });
-
       row.appendChild(cell);
     }
-
     tableBody.appendChild(row);
-  }
+  });
 }
 
-// ドラッグ範囲処理
-function handleDragSelection(startCell, endCell) {
-  const startDate = new Date(startCell.dataset.date);
-  const endDate = new Date(endCell.dataset.date);
-
-  const onboard = startDate < endDate ? startDate : endDate;
-  const offboard = startDate < endDate ? endDate : startDate;
-  const crewName = startCell.dataset.crewName;
-
-  alert(`${crewName} の ${onboard.toISOString().slice(0, 10)} 〜 ${offboard.toISOString().slice(0, 10)} が選択されました。`);
-
-  // ※このあと「船選択」→「POST送信」へ進みます
-}
-
-// 初期化とセレクトボックスイベント
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const yearSel = document.getElementById("yearSelect");
   const monthSel = document.getElementById("monthSelect");
+  const reloadBtn = document.getElementById("reloadBtn");
 
   const now = new Date();
-  yearSel.value = now.getFullYear();
-  monthSel.value = now.getMonth() + 1;
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth();
 
-  yearSel.addEventListener("change", loadAssignments);
-  monthSel.addEventListener("change", loadAssignments);
+  // 年セレクト初期化
+  for (let y = thisYear - 2; y <= thisYear + 2; y++) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    if (y === thisYear) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
 
-  loadAssignments();
+  // 月セレクト初期化
+  for (let m = 0; m < 12; m++) {
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = m + 1;
+    if (m === thisMonth) opt.selected = true;
+    monthSel.appendChild(opt);
+  }
+
+  await loadShipColors();
+  await loadAssignments(thisYear, thisMonth);
+
+  reloadBtn.addEventListener("click", () => {
+    const year = parseInt(yearSel.value);
+    const month = parseInt(monthSel.value);
+    loadAssignments(year, month);
+  });
 });
-
-document.getElementById("submitAssignment").addEventListener("click", () => {
-  const shipId = document.getElementById("shipSelect").value;
-  const status = document.getElementById("statusSelect").value;
-  const crewName = window.selectedCrew;
-
-  // crew_name → crew_id に変換（APIで取得）
-  fetch("/crew_members")
-    .then(res => res.json())
-    .then(crewList => {
-      const crew = crewList.find(c => `${c.last_name} ${c.first_name}` === crewName);
-      if (!crew) return alert("船員が見つかりません");
-
-      // 登録リクエスト送信
-      return fetch("/assignments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          crew_id: crew.id,
-          ship_id: parseInt(shipId),
-          onboard_date: window.selectedOnboard,
-          offboard_date: window.selectedOffboard,
-          status: status
-        })
-      });
-    })
-    .then(() => {
-      alert("登録完了");
-      window.location.reload();
-    })
-    .catch(err => {
-      console.error(err);
-      alert("登録に失敗しました");
-    });
-});
-
