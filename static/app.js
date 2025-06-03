@@ -69,9 +69,10 @@ async function loadAssignments(year, month) {
       const cellStr = cellDate.toISOString().split("T")[0];
       cell.dataset.date = cellStr;
 
+              console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
+
       if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
-        console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
         // 乗船日 or 下船日 の場合だけドラッグ許可
         if (cellStr === onboardStr || cellStr === offboardStr) {
           cell.draggable = true;
