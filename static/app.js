@@ -83,31 +83,48 @@ async function loadAssignments(year, month) {
     tableBody.appendChild(row);
   });
 }
-
-function handleDrop(dropDate) {
+async function handleDrop(dropDate) {
   if (!draggedAssignment) return;
+
   const origOnboard = new Date(draggedAssignment.onboard_date);
   const origOffboard = draggedAssignment.offboard_date ? new Date(draggedAssignment.offboard_date) : null;
-
   const duration = origOffboard ? (origOffboard - origOnboard) / (1000 * 60 * 60 * 24) : 0;
   const newOnboard = dropDate;
   const newOffboard = duration ? new Date(newOnboard.getTime() + duration * 86400000) : null;
 
-  fetch(`/assignments/${draggedAssignment.id}`, {
-    method: "DELETE"
-  }).then(() => {
-    return fetch("/assignments", {
+  const postData = {
+    crew_id: draggedAssignment.crew_id,
+    ship_id: draggedAssignment.ship_id,
+    onboard_date: newOnboard.toISOString().split("T")[0],
+    offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
+    status: draggedAssignment.status
+  };
+
+  // 先にPOSTを試行 → 成功時にDELETE → reload
+  try {
+    const postRes = await fetch("/assignments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        crew_id: draggedAssignment.crew_id,
-        ship_id: draggedAssignment.ship_id,
-        onboard_date: newOnboard.toISOString().split("T")[0],
-        offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
-        status: draggedAssignment.status
-      })
+      body: JSON.stringify(postData)
     });
-  }).then(() => location.reload());
+
+    if (!postRes.ok) {
+      const error = await postRes.json();
+      console.error("POSTエラー:", error);
+      alert("登録に失敗しました: " + (error.error || postRes.statusText));
+      return;
+    }
+
+    // 登録成功後、旧データ削除
+    await fetch(`/assignments/${draggedAssignment.id}`, {
+      method: "DELETE"
+    });
+
+    location.reload();
+  } catch (err) {
+    console.error("通信エラー:", err);
+    alert("サーバーとの通信に失敗しました。");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
