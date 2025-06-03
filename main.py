@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from models import db
 from routes import api
@@ -16,7 +16,7 @@ app.register_blueprint(api)
 
 @app.route("/")
 def index():
-    return "船員配乗管理アプリ（DB接続完了）"
+    return render_template("index.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
