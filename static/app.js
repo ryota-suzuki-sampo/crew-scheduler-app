@@ -100,6 +100,7 @@ async function handleDrop(dropDate) {
     offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
     status: draggedAssignment.status
   };
+    console.log("postData:", postData);
 
   try {
     const postRes = await fetch("/assignments", {
