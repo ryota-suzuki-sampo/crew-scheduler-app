@@ -65,6 +65,7 @@ async function loadAssignments(year, month) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
+          console.log("dragstart item:", item);
           draggedAssignment = {
             id: item.id,
             crew_id: item.crew_id,

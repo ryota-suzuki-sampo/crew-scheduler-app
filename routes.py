@@ -10,6 +10,8 @@ def get_assignments():
     for a in assignments:
         result.append({
             "id": a.id,
+            "crew_id": a.crew_id,
+            "ship_id": a.ship_id,
             "crew_name": f"{a.crew.last_name} {a.crew.first_name}",
             "ship_name": a.ship.name,
             "onboard_date": a.onboard_date.strftime('%Y-%m-%d'),
