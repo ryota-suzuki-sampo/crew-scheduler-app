@@ -1,12 +1,13 @@
-// static/app.js（ドラッグで乗船日変更対応）
+// static/app.js
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-const shipColors = {}; // ship_name -> color_code
+const shipColors = {};
 let shipList = [];
 let draggedAssignment = null;
+let draggedField = null;
 
 async function loadShipColors() {
   const res = await fetch("/ships");
@@ -29,19 +30,18 @@ async function loadShipColors() {
 }
 
 async function loadAssignments(year, month) {
-  const table = document.getElementById("assignment-table");
-  table.innerHTML = "";
-  table.innerHTML = `<thead></thead><tbody id="assignment-table-body"></tbody>`;
+  const tableHead = document.querySelector("#assignment-table thead");
+  const tableBody = document.querySelector("#assignment-table-body");
+  if (!tableHead || !tableBody) return;
 
-  const tableHead = table.querySelector("thead");
-  const tableBody = table.querySelector("#assignment-table-body");
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
 
   const daysInMonth = getDaysInMonth(year, month);
   const res = await fetch("/assignments");
   const data = await res.json();
 
-  data.sort((a, b) => a.ship_id - b.ship_id);
-
+  // 日付ヘッダー
   const headerRow = document.createElement("tr");
 
   headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
@@ -64,20 +64,24 @@ async function loadAssignments(year, month) {
       cell.dataset.crew = crewName;
       cell.dataset.date = cellDate.toISOString().split("T")[0];
 
-      if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
+      if (cellDate.toDateString() === onboard.toDateString()) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
         cell.draggable = true;
+        cell.dataset.dragField = "onboard_date";
         cell.addEventListener("dragstart", () => {
-          console.log("dragstart item:", item);
-          draggedAssignment = {
-            id: item.id,
-            crew_id: item.crew_id,
-            ship_id: item.ship_id,
-            onboard_date: item.onboard_date,
-            offboard_date: item.offboard_date,
-            status: item.status
-          };
+          draggedAssignment = item;
+          draggedField = "onboard_date";
         });
+      } else if (offboard && cellDate.toDateString() === offboard.toDateString()) {
+        cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
+        cell.draggable = true;
+        cell.dataset.dragField = "offboard_date";
+        cell.addEventListener("dragstart", () => {
+          draggedAssignment = item;
+          draggedField = "offboard_date";
+        });
+      } else if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
+        cell.style.backgroundColor = shipColors[item.ship_name] || "#eeeeee";
       }
 
       cell.addEventListener("dragover", e => e.preventDefault());
@@ -89,28 +93,40 @@ async function loadAssignments(year, month) {
 }
 
 async function handleDrop(dropDate) {
-  if (!draggedAssignment) return;
+  if (!draggedAssignment || !draggedField) return;
 
-  const origOnboard = new Date(draggedAssignment.onboard_date);
-  const origOffboard = draggedAssignment.offboard_date ? new Date(draggedAssignment.offboard_date) : null;
-  const duration = origOffboard ? (origOffboard - origOnboard) / (1000 * 60 * 60 * 24) : 0;
-  const newOnboard = dropDate;
-  const newOffboard = duration ? new Date(newOnboard.getTime() + duration * 86400000) : null;
-
-  const postData = {
-    crew_id: draggedAssignment.crew_id,
-    ship_id: draggedAssignment.ship_id,
-    onboard_date: newOnboard.toISOString().split("T")[0],
-    offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
-    status: draggedAssignment.status
+  const updatedAssignment = {
+    ...draggedAssignment,
+    onboard_date: draggedAssignment.onboard_date,
+    offboard_date: draggedAssignment.offboard_date
   };
-    console.log("postData:", postData);
+
+  const dropDateStr = dropDate.toISOString().split("T")[0];
+  const onboardStr = new Date(draggedAssignment.onboard_date).toISOString().split("T")[0];
+  const offboardStr = draggedAssignment.offboard_date
+    ? new Date(draggedAssignment.offboard_date).toISOString().split("T")[0]
+    : null;
+
+  if (draggedField === "onboard_date" && dropDateStr !== onboardStr) {
+    updatedAssignment.onboard_date = dropDateStr;
+  } else if (draggedField === "offboard_date" && dropDateStr !== offboardStr) {
+    updatedAssignment.offboard_date = dropDateStr;
+  } else {
+    return; // 無効なドロップ
+  }
 
   try {
+    // POST新規
     const postRes = await fetch("/assignments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(postData)
+      body: JSON.stringify({
+        crew_id: updatedAssignment.crew_id,
+        ship_id: updatedAssignment.ship_id,
+        onboard_date: updatedAssignment.onboard_date,
+        offboard_date: updatedAssignment.offboard_date,
+        status: updatedAssignment.status
+      })
     });
 
     if (!postRes.ok) {
@@ -120,6 +136,7 @@ async function handleDrop(dropDate) {
       return;
     }
 
+    // DELETE旧データ
     await fetch(`/assignments/${draggedAssignment.id}`, {
       method: "DELETE"
     });
@@ -132,9 +149,9 @@ async function handleDrop(dropDate) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const yearSel = document.getElementById("yearSelect") || document.getElementById("year-select");
-  const monthSel = document.getElementById("monthSelect") || document.getElementById("month-select");
-  const reloadBtn = document.getElementById("reloadBtn") || document.getElementById("reload-btn");
+  const yearSel = document.getElementById("yearSelect");
+  const monthSel = document.getElementById("monthSelect");
+  const reloadBtn = document.getElementById("reloadBtn");
 
   const now = new Date();
   const thisYear = now.getFullYear();
