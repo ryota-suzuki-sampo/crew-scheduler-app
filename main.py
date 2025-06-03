@@ -1,9 +1,7 @@
-from flask import Flask
-from models import db
 import os
 from dotenv import load_dotenv
-
-load_dotenv()  # .env を読み込む（ローカル開発用）
+from flask import Flask
+from models import db
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
