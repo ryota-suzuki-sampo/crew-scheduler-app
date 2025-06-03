@@ -17,3 +17,24 @@ def get_assignments():
             "status": a.status
         })
     return jsonify(result)
+
+@api.route("/ships", methods=["GET"])
+def get_ships():
+    ships = Ship.query.all()
+    result = [{
+        "id": ship.id,
+        "name": ship.name,
+        "color_code": ship.color_code
+    } for ship in ships]
+    return jsonify(result)
+
+@api.route("/crew_members", methods=["GET"])
+def get_crew_members():
+    crew = CrewMember.query.all()
+    result = [{
+        "id": member.id,
+        "last_name": member.last_name,
+        "first_name": member.first_name,
+        "employee_code": member.employee_code
+    } for member in crew]
+    return jsonify(result)
