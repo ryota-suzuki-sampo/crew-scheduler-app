@@ -1,13 +1,12 @@
-// static/app.js（完全版：色付き + D&D + POST）
+// static/app.js（ドラッグで乗船日変更対応）
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-const shipColors = {}; // ship_id -> color_code
+const shipColors = {}; // ship_name -> color_code
 let shipList = [];
-let draggedCrewName = null;
-let draggedStart = null;
+let draggedAssignment = null;
 
 async function loadShipColors() {
   const res = await fetch("/ships");
@@ -66,52 +65,49 @@ async function loadAssignments(year, month) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
-          draggedCrewName = crewName;
-          draggedStart = cellDate;
+          draggedAssignment = {
+            id: item.id,
+            crew_id: item.crew_id,
+            ship_id: item.ship_id,
+            onboard_date: item.onboard_date,
+            offboard_date: item.offboard_date,
+            status: item.status
+          };
         });
-        cell.addEventListener("dragover", e => e.preventDefault());
-        cell.addEventListener("drop", () => handleDrop(cellDate, crewName));
       }
 
+      cell.addEventListener("dragover", e => e.preventDefault());
+      cell.addEventListener("drop", () => handleDrop(cellDate));
       row.appendChild(cell);
     }
     tableBody.appendChild(row);
   });
 }
 
-function handleDrop(dropDate, crewName) {
-  const start = draggedStart < dropDate ? draggedStart : dropDate;
-  const end = draggedStart > dropDate ? draggedStart : dropDate;
+function handleDrop(dropDate) {
+  if (!draggedAssignment) return;
+  const origOnboard = new Date(draggedAssignment.onboard_date);
+  const origOffboard = draggedAssignment.offboard_date ? new Date(draggedAssignment.offboard_date) : null;
 
-  document.getElementById("modal-crew").textContent = `船員: ${crewName}`;
-  document.getElementById("modal-period").textContent = `期間: ${start.toLocaleDateString()} ～ ${end.toLocaleDateString()}`;
-  const modal = new bootstrap.Modal(document.getElementById("assignModal"));
-  modal.show();
+  const duration = origOffboard ? (origOffboard - origOnboard) / (1000 * 60 * 60 * 24) : 0;
+  const newOnboard = dropDate;
+  const newOffboard = duration ? new Date(newOnboard.getTime() + duration * 86400000) : null;
 
-  document.getElementById("submitAssignment").onclick = async () => {
-    const shipId = document.getElementById("shipSelect").value;
-    const status = document.getElementById("statusSelect").value;
-
-    const crewRes = await fetch("/crew_members");
-    const crewList = await crewRes.json();
-    const match = crewList.find(m => `${m.last_name} ${m.first_name}` === crewName);
-    if (!match) return alert("船員が見つかりません");
-
-    await fetch("/assignments", {
+  fetch(`/assignments/${draggedAssignment.id}`, {
+    method: "DELETE"
+  }).then(() => {
+    return fetch("/assignments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        crew_id: match.id,
-        ship_id: parseInt(shipId),
-        onboard_date: start.toISOString().split("T")[0],
-        offboard_date: end.toISOString().split("T")[0],
-        status
+        crew_id: draggedAssignment.crew_id,
+        ship_id: draggedAssignment.ship_id,
+        onboard_date: newOnboard.toISOString().split("T")[0],
+        offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
+        status: draggedAssignment.status
       })
     });
-
-    modal.hide();
-    location.reload();
-  };
+  }).then(() => location.reload());
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
