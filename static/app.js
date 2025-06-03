@@ -74,6 +74,7 @@ async function loadAssignments(year, month) {
 
         // 乗船日 or 下船日 の場合だけドラッグ許可
         if (cellStr === onboardStr || cellStr === offboardStr) {
+          console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
           cell.draggable = true;
           cell.addEventListener("dragstart", () => {
             draggedAssignment = item;
