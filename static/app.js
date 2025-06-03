@@ -29,12 +29,12 @@ async function loadShipColors() {
 }
 
 async function loadAssignments(year, month) {
-  const tableHead = document.querySelector("#assignment-table thead");
-  const tableBody = document.querySelector("#assignment-table-body");
-  if (!tableHead || !tableBody) return;
+  const table = document.getElementById("assignment-table");
+  table.innerHTML = "";
+  table.innerHTML = `<thead></thead><tbody id="assignment-table-body"></tbody>`;
 
-  tableHead.innerHTML = "";
-  tableBody.innerHTML = "";
+  const tableHead = table.querySelector("thead");
+  const tableBody = table.querySelector("#assignment-table-body");
 
   const daysInMonth = getDaysInMonth(year, month);
   const res = await fetch("/assignments");
@@ -83,6 +83,7 @@ async function loadAssignments(year, month) {
     tableBody.appendChild(row);
   });
 }
+
 async function handleDrop(dropDate) {
   if (!draggedAssignment) return;
 
@@ -100,7 +101,6 @@ async function handleDrop(dropDate) {
     status: draggedAssignment.status
   };
 
-  // 先にPOSTを試行 → 成功時にDELETE → reload
   try {
     const postRes = await fetch("/assignments", {
       method: "POST",
@@ -115,7 +115,6 @@ async function handleDrop(dropDate) {
       return;
     }
 
-    // 登録成功後、旧データ削除
     await fetch(`/assignments/${draggedAssignment.id}`, {
       method: "DELETE"
     });
@@ -128,9 +127,9 @@ async function handleDrop(dropDate) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const yearSel = document.getElementById("yearSelect");
-  const monthSel = document.getElementById("monthSelect");
-  const reloadBtn = document.getElementById("reloadBtn");
+  const yearSel = document.getElementById("yearSelect") || document.getElementById("year-select");
+  const monthSel = document.getElementById("monthSelect") || document.getElementById("month-select");
+  const reloadBtn = document.getElementById("reloadBtn") || document.getElementById("reload-btn");
 
   const now = new Date();
   const thisYear = now.getFullYear();
