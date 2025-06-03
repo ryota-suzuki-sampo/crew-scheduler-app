@@ -171,9 +171,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadShipColors();
   await loadAssignments(thisYear, thisMonth);
 
-  reloadBtn.addEventListener("click", () => {
+  reloadBtn.addEventListener("click", async () => {
     const year = parseInt(yearSel.value);
     const month = parseInt(monthSel.value);
-    loadAssignments(year, month);
+    draggedAssignment = null;
+    draggedType = null;
+    await loadAssignments(year, month);  // 明示的にawait
   });
 });
