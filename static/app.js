@@ -40,7 +40,10 @@ async function loadAssignments(year, month) {
   const res = await fetch("/assignments");
   const data = await res.json();
 
+  data.sort((a, b) => a.ship_id - b.ship_id);
+
   const headerRow = document.createElement("tr");
+
   headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
   for (let d = 1; d <= daysInMonth; d++) {
     headerRow.innerHTML += `<th>${d}</th>`;
