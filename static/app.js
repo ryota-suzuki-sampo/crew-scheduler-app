@@ -52,10 +52,9 @@ async function loadAssignments(year, month) {
   data.sort((a, b) => a.ship_id - b.ship_id);
 
   data.forEach(item => {
-    const onboard = toDateStringYMD(new Date(item.onboard_date));
-    const offboard = toDateStringYMD(item.offboard_date
-      ? new Date(item.offboard_date)
-      : new Date(year, month + 1, 0)); // 月末に仮設定（表示用）
+    const onboard = parseUTCDateStringAsLocalDate(item.onboard_date);
+    const offboardRaw = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
+    const offboard = offboardRaw || new Date(year, month + 1, 0); // 月末に仮設定
 
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
@@ -108,6 +107,18 @@ async function loadAssignments(year, month) {
 
     tableBody.appendChild(row);
   });
+}
+function parseUTCDateStringAsLocalDate(dateString) {
+    if (!dateString) return null;
+    // YYYY-MM-DD を想定
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // 月は0から始まる
+        const day = parseInt(parts[2], 10);
+        return new Date(year, month, day); // ローカルタイムゾーンの0時で Date オブジェクトを生成
+    }
+    return new Date(dateString); // フォールバック（元の挙動に近いが推奨しない）
 }
 
 function toDateStringYMD(date) {
