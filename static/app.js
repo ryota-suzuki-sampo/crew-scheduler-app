@@ -62,14 +62,15 @@ async function loadAssignments(year, month) {
       const cellDate = new Date(year, month, d);
       const cell = document.createElement("td");
       cell.className = "assignment-cell";
-      const onboardStr = new Date(item.onboard_date).toISOString().split("T")[0];
+      const onboardStr = new Date(item.onboard_date).toDateString();
       const offboardStr = item.offboard_date
-        ? new Date(item.offboard_date).toISOString().split("T")[0]
+        ? new Date(item.offboard_date).toDateString()
         : null;
-      const cellStr = cellDate.toISOString().split("T")[0];
+      const cellStr = cellDate.toDateString();
+
       cell.dataset.date = cellStr;
 
-              console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
+      console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
       if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
