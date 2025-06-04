@@ -90,6 +90,7 @@ async function loadAssignments(year, month) {
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
           draggedAssignment = item;
+          console.log(`[ドラッグ開始!] crew: ${item.crew_name}, ship: ${item.ship_name}, draggedTypeをこれから設定します。isOnboardは${isOnboard}です。`);
           draggedType = isOnboard ? "onboard" : "offboard";
         });
       }
