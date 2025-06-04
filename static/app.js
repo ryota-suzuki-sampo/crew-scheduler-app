@@ -140,6 +140,7 @@ async function handleDrop(dropDate) {
 
   console.log(`draggedType: ${draggedType}, onboard_date: ${onboard}, offboard_date: ${offboard}`);
   console.log(`newOnboard: ${newOnboard}, newOffboard: ${newOffboard}, dropDate: ${dropDate}`);
+  console.log(`status: ${draggedAssignment.status}, crew_id: ${draggedAssignment.crew_id}, ship_id: ${draggedAssignment.ship_id}`);
 
   if (draggedType === "onboard") {
     newOnboard = dropDate;
