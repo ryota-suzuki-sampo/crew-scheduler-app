@@ -57,7 +57,7 @@ def create_assignment():
             crew_id=data["crew_id"],
             ship_id=data["ship_id"],
             onboard_date=data["onboard_date"],
-            offboard_date=data.get("offboard_date"),
+            offboard_date=data["offboard_date"],
             status=data["status"]
         )
         db.session.add(new_assignment)
