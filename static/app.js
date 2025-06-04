@@ -53,7 +53,7 @@ async function loadAssignments(year, month) {
 
   data.forEach(item => {
     const onboard = new Date(item.onboard_date);
-    const offboard = item.offboard_date ? new Date(item.offboard_date) : null;
+    const offboard = item.offboard_date ? new Date(item.offboard_date) : new Date(year, month + 1, 0); // ← ここ
 
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
@@ -70,16 +70,16 @@ async function loadAssignments(year, month) {
 
       console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
-      if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
-        cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
-        // 乗船日 or 下船日 の場合だけドラッグ許可
-        if (cellStr === onboardStr || cellStr === offboardStr) {
-          cell.draggable = true;
-          cell.addEventListener("dragstart", () => {
-            draggedAssignment = item;
-            draggedType = (cellStr === onboardStr) ? "onboard" : "offboard";
-          });
-        }
+      if (cellStr === onboardStr || (!offboardStr && d === daysInMonth) || cellStr === offboardStr) {
+        cell.draggable = true;
+        cell.addEventListener("dragstart", () => {
+          draggedAssignment = item;
+          if (cellStr === onboardStr) {
+            draggedType = "onboard";
+          } else {
+            draggedType = "offboard";
+          }
+        });
       }
 
       cell.addEventListener("dragover", e => e.preventDefault());
