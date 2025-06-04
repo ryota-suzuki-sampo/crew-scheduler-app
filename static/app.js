@@ -118,7 +118,7 @@ document.getElementById("nextBtn").addEventListener("click", () => {
   loadAssignments(currentYear, currentMonth);
 });
 
-document.getElementById("view-span").addEventListener("change", e => {
+document.getElementById("viewSpanSelect").addEventListener("change", e => {
   viewSpan = parseInt(e.target.value, 10);
   loadAssignments(currentYear, currentMonth);
 });
