@@ -233,7 +233,6 @@ async function handleDrop(dropDate) {
   }
 }
 
-let currentYear, currentMonth, viewSpan = 1;
 document.addEventListener("DOMContentLoaded", async () => {
   const yearSel = document.getElementById("yearSelect");
   const monthSel = document.getElementById("monthSelect");
