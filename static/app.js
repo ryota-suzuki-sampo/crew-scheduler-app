@@ -28,6 +28,9 @@ async function loadShipColors() {
     });
   }
 }
+// グローバル変数として viewSpan を宣言
+let viewSpan = 1;  // デフォルトは1ヶ月表示
+
 async function loadAssignments(year, month) {
   console.log(`loadAssignments call`);
 
