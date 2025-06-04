@@ -146,6 +146,7 @@ async function handleDrop(dropDate) {
     newOnboard = dropDate;
   } else if (draggedType === "offboard") {
     newOffboard = dropDate;
+    console.log(`newOffboard set to dropDate: ${newOffboard}`);
   } else {
     return; // それ以外は無視
   }
@@ -157,6 +158,9 @@ async function handleDrop(dropDate) {
     offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
     status: draggedAssignment.status
   };
+
+  console.log("POST data:", data);
+
 
   try {
     const postRes = await fetch("/assignments", {
