@@ -48,12 +48,14 @@ async function loadAssignments(year, month) {
   }
   tableHead.appendChild(headerRow);
 
-  // 日付順、ship_id順で並び替え（視認性向上）
+  // 並び順
   data.sort((a, b) => a.ship_id - b.ship_id);
 
   data.forEach(item => {
     const onboard = new Date(item.onboard_date);
-    const offboard = item.offboard_date ? new Date(item.offboard_date) : new Date(year, month + 1, 0); // ← ここ
+    const offboard = item.offboard_date
+      ? new Date(item.offboard_date)
+      : new Date(year, month + 1, 0); // 月末に仮設定（表示用）
 
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
@@ -62,40 +64,45 @@ async function loadAssignments(year, month) {
       const cellDate = new Date(year, month, d);
       const cell = document.createElement("td");
       cell.className = "assignment-cell";
-      const onboardStr = toDateStringYMD(new Date(item.onboard_date));
-      const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
-      const cellStr = toDateStringYMD(cellDate);
 
+      const onboardStr = toDateStringYMD(onboard);
+      const offboardStr = item.offboard_date
+        ? toDateStringYMD(new Date(item.offboard_date))
+        : null;
+      const cellStr = toDateStringYMD(cellDate);
       cell.dataset.date = cellStr;
 
       console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
-      // 背景色は onboard <= cellDate <= offboard（offboardがnullでも月末に仮設定）
+      // 表示色（帯表示）
       if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
       }
 
-      // ドラッグ対象は乗船日または、下船日または、offboardがnullなら月末日
-      if (cellStr === onboardStr || cellStr === offboardStr || (!item.offboard_date && d === daysInMonth)) {
+      // ドラッグ許可
+      if (
+        cellStr === onboardStr ||
+        cellStr === offboardStr ||
+        (!item.offboard_date && d === daysInMonth)
+      ) {
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
           draggedAssignment = item;
-          if (cellStr === onboardStr) {
-            draggedType = "onboard";
-          } else {
-            draggedType = "offboard";
-          }
+          draggedType = (cellStr === onboardStr) ? "onboard" : "offboard";
         });
       }
 
+      // ドロップ処理
       cell.addEventListener("dragover", e => e.preventDefault());
       cell.addEventListener("drop", () => handleDrop(cellDate));
+
       row.appendChild(cell);
     }
 
     tableBody.appendChild(row);
   });
 }
+
 function toDateStringYMD(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
