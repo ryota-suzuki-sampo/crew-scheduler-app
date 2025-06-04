@@ -70,7 +70,13 @@ async function loadAssignments(year, month) {
 
       console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
-      if (cellStr === onboardStr || (!offboardStr && d === daysInMonth) || cellStr === offboardStr) {
+      // 背景色は onboard <= cellDate <= offboard（offboardがnullでも月末に仮設定）
+      if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
+        cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
+      }
+
+      // ドラッグ対象は乗船日または、下船日または、offboardがnullなら月末日
+      if (cellStr === onboardStr || cellStr === offboardStr || (!item.offboard_date && d === daysInMonth)) {
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
           draggedAssignment = item;
