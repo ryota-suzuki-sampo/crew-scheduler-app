@@ -84,6 +84,8 @@ async function loadAssignments(year, month) {
       const isOffboard = cellStr === offboardStr;
       const isLastDay = !item.offboard_date && cellStr === toDateStringYMD(new Date(year, month, daysInMonth));
 
+      console.log(`isOnboard: ${isOnboard}, isOffboard: ${isOffboard}, isLastDay: ${isLastDay}`);
+
       if (isOnboard || isOffboard || isLastDay) {
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
@@ -92,6 +94,7 @@ async function loadAssignments(year, month) {
         });
       }
 
+      console.log(`draggedType: ${draggedType}, cell.draggable: ${cell.draggable}`);
 
       // ドロップ処理
       cell.addEventListener("dragover", e => e.preventDefault());
