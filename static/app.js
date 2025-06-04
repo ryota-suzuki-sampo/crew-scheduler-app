@@ -62,11 +62,9 @@ async function loadAssignments(year, month) {
       const cellDate = new Date(year, month, d);
       const cell = document.createElement("td");
       cell.className = "assignment-cell";
-      const onboardStr = new Date(item.onboard_date).toDateString();
-      const offboardStr = item.offboard_date
-        ? new Date(item.offboard_date).toDateString()
-        : null;
-      const cellStr = cellDate.toDateString();
+      const onboardStr = toDateStringYMD(new Date(item.onboard_date));
+      const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
+      const cellStr = toDateStringYMD(cellDate);
 
       cell.dataset.date = cellStr;
 
@@ -91,6 +89,12 @@ async function loadAssignments(year, month) {
 
     tableBody.appendChild(row);
   });
+}
+function toDateStringYMD(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 async function handleDrop(dropDate) {
@@ -173,10 +177,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadAssignments(thisYear, thisMonth);
 
   reloadBtn.addEventListener("click", async () => {
-    const year = parseInt(yearSel.value);
-    const month = parseInt(monthSel.value);
+    const year = parseInt(document.getElementById("yearSelect").value);
+    const month = parseInt(document.getElementById("monthSelect").value);
+    await loadAssignments(year, month);
     draggedAssignment = null;
     draggedType = null;
-    await loadAssignments(year, month);  // 明示的にawait
   });
 });
