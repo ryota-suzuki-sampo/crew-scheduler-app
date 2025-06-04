@@ -69,7 +69,10 @@ async function loadAssignments(year, month) {
     const offboard = offboardRaw || new Date(year, month + viewSpan, 0);
     const onboardStr = toDateStringYMD(onboard);
     const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
-
+    
+    console.log(`loadAssignments onboard: ${onboard}, offboardRaw: ${offboardRaw}, offboard: ${offboard}`);
+    console.log(`loadAssignments onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
+    
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
 
@@ -83,6 +86,7 @@ async function loadAssignments(year, month) {
       if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
       }
+      console.log(`loadAssignments isOnboard: ${isOnboard}, cellStr: ${cellStr}, onboardStr: ${onboardStr}`);
 
       const isOnboard = cellStr === onboardStr;
       const isOffboard = cellStr === offboardStr;
@@ -102,15 +106,6 @@ async function loadAssignments(year, month) {
 
     tableBody.appendChild(row);
     console.log(`loadAssignments end`);
-  });
-
-  // 再描画後、イベントリスナーが機能するように確認
-  document.querySelectorAll(".assignment-cell").forEach(cell => {
-    cell.addEventListener("dragover", e => e.preventDefault());
-    cell.addEventListener("drop", (e) => {
-      const dropDate = new Date(e.target.dataset.date);
-      handleDrop(dropDate);
-    });
   });
 }
 
