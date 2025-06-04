@@ -159,7 +159,7 @@ async function handleDrop(dropDate) {
     status: draggedAssignment.status
   };
 
-  console.log("POST data:", data);
+  console.log("POST data:", postData);
 
 
   try {
