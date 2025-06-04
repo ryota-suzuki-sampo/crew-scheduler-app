@@ -100,7 +100,7 @@ async function loadAssignments(year, month) {
   });
 }
 
-document.getElementById("prev-month").addEventListener("click", () => {
+document.getElementById("prevBtn").addEventListener("click", () => {
   currentMonth--;
   if (currentMonth < 0) {
     currentMonth = 11;
@@ -109,7 +109,7 @@ document.getElementById("prev-month").addEventListener("click", () => {
   loadAssignments(currentYear, currentMonth);
 });
 
-document.getElementById("next-month").addEventListener("click", () => {
+document.getElementById("nextBtn").addEventListener("click", () => {
   currentMonth++;
   if (currentMonth > 11) {
     currentMonth = 0;
