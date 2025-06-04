@@ -192,7 +192,6 @@ async function handleDrop(dropDate) {
 
   console.log("POST data:", postData);
 
-
   try {
     const postRes = await fetch("/assignments", {
       method: "POST",
@@ -206,6 +205,7 @@ async function handleDrop(dropDate) {
       alert("登録失敗: " + (error.error || postRes.statusText));
       return;
     }
+    console.log("draggedAssignment.id: ", draggedAssignment.id);
 
     await fetch(`/assignments/${draggedAssignment.id}`, {
       method: "DELETE"
