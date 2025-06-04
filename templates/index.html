@@ -17,15 +17,19 @@
   <div class="container my-4">
     <h1 class="mb-4">船員配乗管理表</h1>
 
-    <div style="margin: 20px;">
-      <button id="prev-month">＜</button>
-      <select id="view-span">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <label>表示範囲</label>
+      <select id="viewSpanSelect" class="form-select" style="width: auto;">
         <option value="1">1ヶ月</option>
+        <option value="3">3ヶ月</option>
         <option value="6">6ヶ月</option>
-        <option value="12">1年</option>
+        <option value="12">12ヶ月</option>
       </select>
-      <button id="next-month">＞</button>
+
+      <button id="prevBtn" class="btn btn-secondary">◀ 前へ</button>
+      <button id="nextBtn" class="btn btn-secondary">次へ ▶</button>
     </div>
+
 
     <div class="mb-3">
       <label for="yearSelect" class="form-label">年</label>

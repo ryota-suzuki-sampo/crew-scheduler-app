@@ -100,11 +100,6 @@ async function loadAssignments(year, month) {
   });
 }
 
-// 表示月切り替え
-let currentYear = new Date().getFullYear();
-let currentMonth = new Date().getMonth();
-let viewSpan = 1;
-
 document.getElementById("prev-month").addEventListener("click", () => {
   currentMonth--;
   if (currentMonth < 0) {
@@ -217,39 +212,42 @@ async function handleDrop(dropDate) {
   }
 }
 
+let currentYear, currentMonth, viewSpan = 1;
+
 document.addEventListener("DOMContentLoaded", async () => {
   const yearSel = document.getElementById("yearSelect");
   const monthSel = document.getElementById("monthSelect");
-  const reloadBtn = document.getElementById("reloadBtn");
+  const viewSel = document.getElementById("viewSpanSelect");
 
   const now = new Date();
-  const thisYear = now.getFullYear();
-  const thisMonth = now.getMonth();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
 
-  for (let y = thisYear - 2; y <= thisYear + 2; y++) {
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y;
-    if (y === thisYear) opt.selected = true;
-    yearSel.appendChild(opt);
-  }
+  // 初期選択
+  viewSel.value = "1";
+  viewSel.addEventListener("change", async () => {
+    viewSpan = parseInt(viewSel.value);
+    await loadAssignments(currentYear, currentMonth);
+  });
 
-  for (let m = 0; m < 12; m++) {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m + 1;
-    if (m === thisMonth) opt.selected = true;
-    monthSel.appendChild(opt);
-  }
+  document.getElementById("prevBtn").addEventListener("click", async () => {
+    currentMonth -= viewSpan;
+    if (currentMonth < 0) {
+      currentYear -= 1;
+      currentMonth += 12;
+    }
+    await loadAssignments(currentYear, currentMonth);
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", async () => {
+    currentMonth += viewSpan;
+    if (currentMonth > 11) {
+      currentYear += 1;
+      currentMonth -= 12;
+    }
+    await loadAssignments(currentYear, currentMonth);
+  });
 
   await loadShipColors();
-  await loadAssignments(thisYear, thisMonth);
-
-  reloadBtn.addEventListener("click", async () => {
-    const year = parseInt(document.getElementById("yearSelect").value);
-    const month = parseInt(document.getElementById("monthSelect").value);
-    await loadAssignments(year, month);
-    draggedAssignment = null;
-    draggedType = null;
-  });
+  await loadAssignments(currentYear, currentMonth);
 });
