@@ -80,17 +80,18 @@ async function loadAssignments(year, month) {
       }
 
       // ドラッグ許可
-      if (
-        cellStr === onboardStr ||
-        cellStr === offboardStr ||
-        (!item.offboard_date && d === daysInMonth)
-      ) {
+      const isOnboard = cellStr === onboardStr;
+      const isOffboard = cellStr === offboardStr;
+      const isLastDay = !item.offboard_date && cellStr === toDateStringYMD(new Date(year, month, daysInMonth));
+
+      if (isOnboard || isOffboard || isLastDay) {
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
           draggedAssignment = item;
-          draggedType = (cellStr === onboardStr) ? "onboard" : "offboard";
+          draggedType = isOnboard ? "onboard" : "offboard";
         });
       }
+
 
       // ドロップ処理
       cell.addEventListener("dragover", e => e.preventDefault());
