@@ -141,7 +141,12 @@ async function handleDrop(dropDate) {
       method: "DELETE"
     });
 
-    location.reload();
+    //location.reload();
+    const year = parseInt(document.getElementById("yearSelect").value);
+    const month = parseInt(document.getElementById("monthSelect").value);
+    await loadAssignments(year, month);
+    draggedAssignment = null;
+    draggedType = null;
   } catch (err) {
     console.error("通信エラー:", err);
     alert("サーバーエラーが発生しました");
