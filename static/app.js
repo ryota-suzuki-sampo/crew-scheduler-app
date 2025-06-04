@@ -29,6 +29,8 @@ async function loadShipColors() {
   }
 }
 async function loadAssignments(year, month) {
+  console.log(`loadAssignments call`);
+
   const tableHead = document.querySelector("#assignment-table thead");
   const tableBody = document.querySelector("#assignment-table-body");
   if (!tableHead || !tableBody) return;
@@ -99,6 +101,7 @@ async function loadAssignments(year, month) {
     });
 
     tableBody.appendChild(row);
+    console.log(`loadAssignments end`);
   });
 
   // 再描画後、イベントリスナーが機能するように確認
