@@ -52,10 +52,10 @@ async function loadAssignments(year, month) {
   data.sort((a, b) => a.ship_id - b.ship_id);
 
   data.forEach(item => {
-    const onboard = new Date(item.onboard_date);
-    const offboard = item.offboard_date
+    const onboard = toDateStringYMD(new Date(item.onboard_date));
+    const offboard = toDateStringYMD(item.offboard_date
       ? new Date(item.offboard_date)
-      : new Date(year, month + 1, 0); // 月末に仮設定（表示用）
+      : new Date(year, month + 1, 0)); // 月末に仮設定（表示用）
 
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
