@@ -37,52 +37,54 @@ async function loadAssignments(year, month) {
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
-  const daysInMonth = getDaysInMonth(year, month);
   const res = await fetch("/assignments");
   const data = await res.json();
 
   const headerRow = document.createElement("tr");
   headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
-  for (let d = 1; d <= daysInMonth; d++) {
-    headerRow.innerHTML += `<th>${d}</th>`;
+
+  const datesToRender = [];
+  for (let offset = 0; offset < viewSpan; offset++) {
+    const tempYear = new Date(year, month + offset).getFullYear();
+    const tempMonth = new Date(year, month + offset).getMonth();
+    const days = getDaysInMonth(tempYear, tempMonth);
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(tempYear, tempMonth, d);
+      datesToRender.push(date);
+      headerRow.innerHTML += `<th>${tempYear}/${tempMonth + 1}/${d}</th>`;
+    }
   }
   tableHead.appendChild(headerRow);
 
-  // 並び順
   data.sort((a, b) => a.ship_id - b.ship_id);
 
   data.forEach(item => {
     const onboard = parseUTCDateStringAsLocalDate(item.onboard_date);
     const offboardRaw = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
-    const offboard = offboardRaw || new Date(year, month + 1, 0); // 月末に仮設定
+    const offboard = offboardRaw || new Date(year, month + viewSpan, 0);
 
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
 
-    for (let d = 1; d <= daysInMonth; d++) {
-      const cellDate = new Date(year, month, d);
+    datesToRender.forEach(cellDate => {
       const cell = document.createElement("td");
       cell.className = "assignment-cell";
 
       const onboardStr = toDateStringYMD(onboard);
-      const offboardStr = item.offboard_date
-        ? toDateStringYMD(new Date(item.offboard_date))
-        : null;
+      const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
       const cellStr = toDateStringYMD(cellDate);
       cell.dataset.date = cellStr;
 
       console.log(`onboard: ${onboard}, item.offboard_date: ${item.offboard_date}, offboard: ${offboard}`);
       console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
-      // 表示色（帯表示）
       if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
       }
 
-      // ドラッグ許可
       const isOnboard = cellStr === onboardStr;
       const isOffboard = cellStr === offboardStr;
-      const isLastDay = !item.offboard_date && cellStr === toDateStringYMD(new Date(year, month, daysInMonth));
+      const isLastDay = !item.offboard_date && cellStr === toDateStringYMD(datesToRender[datesToRender.length - 1]);
 
       console.log(`isOnboard: ${isOnboard}, isOffboard: ${isOffboard}, isLastDay: ${isLastDay}`);
 
@@ -98,16 +100,45 @@ async function loadAssignments(year, month) {
 
       console.log(`draggedType: ${draggedType}, cell.draggable: ${cell.draggable}`);
 
-      // ドロップ処理
       cell.addEventListener("dragover", e => e.preventDefault());
       cell.addEventListener("drop", () => handleDrop(cellDate));
-
       row.appendChild(cell);
-    }
+    });
 
     tableBody.appendChild(row);
   });
 }
+
+// 表示月切り替え
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let viewSpan = 1;
+
+document.getElementById("prev-month").addEventListener("click", () => {
+  currentMonth--;
+  if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  loadAssignments(currentYear, currentMonth);
+});
+
+document.getElementById("next-month").addEventListener("click", () => {
+  currentMonth++;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  }
+  loadAssignments(currentYear, currentMonth);
+});
+
+document.getElementById("view-span").addEventListener("change", e => {
+  viewSpan = parseInt(e.target.value, 10);
+  loadAssignments(currentYear, currentMonth);
+});
+
+// 初回読み込み
+loadAssignments(currentYear, currentMonth);
 function parseUTCDateStringAsLocalDate(dateString) {
     if (!dateString) return null;
     // YYYY-MM-DD を想定
