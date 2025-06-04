@@ -91,9 +91,10 @@ async function loadAssignments(year, month) {
 
       group.assignments.forEach(item => {
         const onboard = parseUTCDateStringAsLocalDate(item.onboard_date);
-        const offboard = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
+        const offboardRaw = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
+        const offboard = offboardRaw || new Date(year, month + viewSpan, 0);
         const onboardStr = toDateStringYMD(onboard);
-        const offboardStr = item.offboard_date ? toDateStringYMD(offboard) : null;
+        const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
 
         if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
           cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
