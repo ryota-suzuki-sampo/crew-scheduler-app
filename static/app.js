@@ -28,7 +28,6 @@ async function loadShipColors() {
     });
   }
 }
-
 async function loadAssignments(year, month) {
   const tableHead = document.querySelector("#assignment-table thead");
   const tableBody = document.querySelector("#assignment-table-body");
@@ -37,46 +36,45 @@ async function loadAssignments(year, month) {
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
-  const res = await fetch("/assignments");
-  const data = await res.json();
-
+  const stepDays = viewSpan === 1 ? 1 : viewSpan === 3 ? 3 : viewSpan === 6 ? 6 : 10; // 月内の表示単位（日）
   const headerRow = document.createElement("tr");
   headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
 
-  const datesToRender = [];
+  const displayDates = []; // 表示用の日付保持
+
   for (let offset = 0; offset < viewSpan; offset++) {
-    const tempYear = new Date(year, month + offset).getFullYear();
-    const tempMonth = new Date(year, month + offset).getMonth();
-    const days = getDaysInMonth(tempYear, tempMonth);
-    for (let d = 1; d <= days; d++) {
-      const date = new Date(tempYear, tempMonth, d);
-      datesToRender.push(date);
-      headerRow.innerHTML += `<th>${tempYear}/${tempMonth + 1}/${d}</th>`;
+    const tempDate = new Date(year, month + offset, 1);
+    const days = getDaysInMonth(tempDate.getFullYear(), tempDate.getMonth());
+
+    for (let d = 1; d <= days; d += stepDays) {
+      const cellDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), d);
+      const label = `${cellDate.getMonth() + 1}/${cellDate.getDate()}`;
+      headerRow.innerHTML += `<th>${label}</th>`;
+      displayDates.push(cellDate);
     }
   }
+
   tableHead.appendChild(headerRow);
 
+  const res = await fetch("/assignments");
+  const data = await res.json();
   data.sort((a, b) => a.ship_id - b.ship_id);
 
   data.forEach(item => {
     const onboard = parseUTCDateStringAsLocalDate(item.onboard_date);
     const offboardRaw = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
     const offboard = offboardRaw || new Date(year, month + viewSpan, 0);
+    const onboardStr = toDateStringYMD(onboard);
+    const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
 
     const row = document.createElement("tr");
     row.innerHTML = `<td>${item.crew_name}</td><td>${item.ship_name}</td>`;
 
-    datesToRender.forEach(cellDate => {
+    displayDates.forEach(cellDate => {
       const cell = document.createElement("td");
       cell.className = "assignment-cell";
-
-      const onboardStr = toDateStringYMD(onboard);
-      const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
       const cellStr = toDateStringYMD(cellDate);
       cell.dataset.date = cellStr;
-
-      console.log(`onboard: ${onboard}, item.offboard_date: ${item.offboard_date}, offboard: ${offboard}`);
-      console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
       if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
@@ -84,21 +82,14 @@ async function loadAssignments(year, month) {
 
       const isOnboard = cellStr === onboardStr;
       const isOffboard = cellStr === offboardStr;
-      const isLastDay = !item.offboard_date && cellStr === toDateStringYMD(datesToRender[datesToRender.length - 1]);
 
-      console.log(`isOnboard: ${isOnboard}, isOffboard: ${isOffboard}, isLastDay: ${isLastDay}`);
-
-      if (isOnboard || isOffboard || isLastDay) {
+      if (isOnboard || isOffboard) {
         cell.draggable = true;
         cell.addEventListener("dragstart", () => {
           draggedAssignment = item;
-          console.log(`[ドラッグ開始!] crew: ${item.crew_name}, ship: ${item.ship_name}, draggedTypeをこれから設定します。isOnboardは${isOnboard}です。`);
           draggedType = isOnboard ? "onboard" : "offboard";
-          console.log(`[ドラッグ開始直後] 設定されたdraggedType: ${draggedType}`);
         });
       }
-
-      console.log(`draggedType: ${draggedType}, cell.draggable: ${cell.draggable}`);
 
       cell.addEventListener("dragover", e => e.preventDefault());
       cell.addEventListener("drop", () => handleDrop(cellDate));
@@ -138,7 +129,7 @@ document.getElementById("view-span").addEventListener("change", e => {
 });
 
 // 初回読み込み
-loadAssignments(currentYear, currentMonth);
+//loadAssignments(currentYear, currentMonth);
 function parseUTCDateStringAsLocalDate(dateString) {
     if (!dateString) return null;
     // YYYY-MM-DD を想定
