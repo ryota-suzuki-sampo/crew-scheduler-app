@@ -86,10 +86,11 @@ async function loadAssignments(year, month) {
       if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
       }
-      console.log(`loadAssignments isOnboard: ${isOnboard}, cellStr: ${cellStr}, onboardStr: ${onboardStr}`);
 
       const isOnboard = cellStr === onboardStr;
       const isOffboard = cellStr === offboardStr;
+
+      console.log(`loadAssignments isOnboard: ${isOnboard}, cellStr: ${cellStr}, onboardStr: ${onboardStr}`);
 
       if (isOnboard || isOffboard) {
         cell.draggable = true;
