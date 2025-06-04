@@ -223,25 +223,55 @@ async function handleDrop(dropDate) {
 }
 
 let currentYear, currentMonth, viewSpan = 1;
-
 document.addEventListener("DOMContentLoaded", async () => {
   const yearSel = document.getElementById("yearSelect");
   const monthSel = document.getElementById("monthSelect");
   const viewSel = document.getElementById("viewSpanSelect");
 
+  // 現在の年と月を取得
   const now = new Date();
-  currentYear = now.getFullYear();
-  currentMonth = now.getMonth();
+  let currentYear = now.getFullYear();
+  let currentMonth = now.getMonth();
+
+  // 年のオプションを追加
+  for (let i = currentYear - 10; i <= currentYear + 10; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `${i}年`;
+    if (i === currentYear) {
+      option.selected = true; // 現在の年を選択
+    }
+    yearSel.appendChild(option);
+  }
+
+  // 月のオプションを追加
+  for (let i = 0; i < 12; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `${i + 1}月`;
+    if (i === currentMonth) {
+      option.selected = true; // 現在の月を選択
+    }
+    monthSel.appendChild(option);
+  }
 
   // 初期選択
-  viewSel.value = "1";
-  viewSel.addEventListener("change", async () => {
-    viewSpan = parseInt(viewSel.value);
+  viewSel.value = "1";  // デフォルトの表示期間を1ヶ月に設定
+
+  // 年と月が選択されたときにカレンダーを再読み込み
+  yearSel.addEventListener("change", async () => {
+    currentYear = parseInt(yearSel.value);
+    await loadAssignments(currentYear, parseInt(monthSel.value));
+  });
+
+  monthSel.addEventListener("change", async () => {
+    currentMonth = parseInt(monthSel.value);
     await loadAssignments(currentYear, currentMonth);
   });
 
+  // "前へ" ボタンが押されたとき
   document.getElementById("prevBtn").addEventListener("click", async () => {
-    currentMonth -= viewSpan;
+    currentMonth -= parseInt(viewSel.value);
     if (currentMonth < 0) {
       currentYear -= 1;
       currentMonth += 12;
@@ -249,8 +279,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadAssignments(currentYear, currentMonth);
   });
 
+  // "次へ" ボタンが押されたとき
   document.getElementById("nextBtn").addEventListener("click", async () => {
-    currentMonth += viewSpan;
+    currentMonth += parseInt(viewSel.value);
     if (currentMonth > 11) {
       currentYear += 1;
       currentMonth -= 12;
@@ -258,6 +289,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadAssignments(currentYear, currentMonth);
   });
 
+  // カラー設定の読み込み
   await loadShipColors();
+  // 初回カレンダー表示
   await loadAssignments(currentYear, currentMonth);
 });
+
