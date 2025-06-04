@@ -72,6 +72,7 @@ async function loadAssignments(year, month) {
       const cellStr = toDateStringYMD(cellDate);
       cell.dataset.date = cellStr;
 
+      console.log(`onboard: ${onboard}, item.offboard_date: ${item.offboard_date}, offboard: ${offboard}`);
       console.log(`cellStr: ${cellStr}, onboardStr: ${onboardStr}, offboardStr: ${offboardStr}`);
 
       // 表示色（帯表示）
