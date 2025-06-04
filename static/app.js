@@ -151,11 +151,14 @@ async function handleDrop(dropDate) {
     return; // それ以外は無視
   }
 
+  const formatDate = (date) =>
+    date ? date.toLocaleDateString("sv-SE") : null; // 'YYYY-MM-DD'
+
   const postData = {
     crew_id: draggedAssignment.crew_id,
     ship_id: draggedAssignment.ship_id,
-    onboard_date: newOnboard.toISOString().split("T")[0],
-    offboard_date: newOffboard ? newOffboard.toISOString().split("T")[0] : null,
+    onboard_date: formatDate(newOnboard),
+    offboard_date: newOffboard ? formatDate(newOffboard) : null,
     status: draggedAssignment.status
   };
 
