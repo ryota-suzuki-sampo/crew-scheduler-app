@@ -33,6 +33,7 @@ async function loadAssignments(year, month) {
   const tableBody = document.querySelector("#assignment-table-body");
   if (!tableHead || !tableBody) return;
 
+  // 既存のテーブルヘッダとボディを削除
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
@@ -76,6 +77,7 @@ async function loadAssignments(year, month) {
       const cellStr = toDateStringYMD(cellDate);
       cell.dataset.date = cellStr;
 
+      // 配乗情報があれば色付け
       if (onboard <= cellDate && (!item.offboard_date || cellDate <= offboard)) {
         cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
       }
@@ -97,6 +99,15 @@ async function loadAssignments(year, month) {
     });
 
     tableBody.appendChild(row);
+  });
+
+  // 再描画後、イベントリスナーが機能するように確認
+  document.querySelectorAll(".assignment-cell").forEach(cell => {
+    cell.addEventListener("dragover", e => e.preventDefault());
+    cell.addEventListener("drop", (e) => {
+      const dropDate = new Date(e.target.dataset.date);
+      handleDrop(dropDate);
+    });
   });
 }
 
