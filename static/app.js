@@ -92,6 +92,7 @@ async function loadAssignments(year, month) {
           draggedAssignment = item;
           console.log(`[ドラッグ開始!] crew: ${item.crew_name}, ship: ${item.ship_name}, draggedTypeをこれから設定します。isOnboardは${isOnboard}です。`);
           draggedType = isOnboard ? "onboard" : "offboard";
+          console.log(`[ドラッグ開始直後] 設定されたdraggedType: ${draggedType}`);
         });
       }
 
