@@ -40,24 +40,18 @@ async function loadAssignments(year, month) {
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
-  const stepDays = viewSpan === 1 ? 1 : viewSpan === 3 ? 3 : viewSpan === 6 ? 6 : 10; // 月内の表示単位（日）
-  const headerRow = document.createElement("tr");
-  headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
   // 表示範囲全体の日付取得
   const dateList = [];
   for (let offset = 0; offset < viewSpan; offset++) {
     const tempDate = new Date(year, month + offset, 1);
     const days = getDaysInMonth(tempDate.getFullYear(), tempDate.getMonth());
-
-    for (let d = 1; d <= days; d += stepDays) {
-      const cellDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), d);
-      const label = `${cellDate.getMonth() + 1}/${cellDate.getDate()}`;
-      headerRow.innerHTML += `<th>${label}</th>`;
-      dateList.push(cellDate);
+    for (let d = 1; d <= days; d++) {
+      dateList.push(new Date(tempDate.getFullYear(), tempDate.getMonth(), d));
     }
   }
 
   // ヘッダー行作成
+  const headerRow = document.createElement("tr");
   headerRow.innerHTML = `<th>船員名</th>`;
   dateList.forEach(date => {
     headerRow.innerHTML += `<th>${date.getMonth() + 1}/${date.getDate()}</th>`;
@@ -91,10 +85,9 @@ async function loadAssignments(year, month) {
 
       group.assignments.forEach(item => {
         const onboard = parseUTCDateStringAsLocalDate(item.onboard_date);
-        const offboardRaw = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
-        const offboard = offboardRaw || new Date(year, month + viewSpan, 0);
+        const offboard = item.offboard_date ? parseUTCDateStringAsLocalDate(item.offboard_date) : null;
         const onboardStr = toDateStringYMD(onboard);
-        const offboardStr = item.offboard_date ? toDateStringYMD(new Date(item.offboard_date)) : null;
+        const offboardStr = item.offboard_date ? toDateStringYMD(offboard) : null;
 
         if (onboard <= cellDate && (!offboard || cellDate <= offboard)) {
           cell.style.backgroundColor = shipColors[item.ship_name] || "#dddddd";
@@ -136,9 +129,6 @@ async function handleDrop(dropDate) {
   } else if (draggedType === "offboard") {
     newOffboard = dropDate;
   }
-
-  const formatDate = (date) =>
-    date ? date.toLocaleDateString("sv-SE") : null; // 'YYYY-MM-DD'
 
   const postData = {
     crew_id: draggedAssignment.crew_id,
