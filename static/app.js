@@ -159,7 +159,7 @@ document.getElementById("nextBtn").addEventListener("click", () => {
 
 document.getElementById("viewSpanSelect").addEventListener("change", e => {
   viewSpan = parseInt(e.target.value, 10);
-console.log(`viewSpanSelect currentYear=${currentYear}, currentMonth=${currentMonth}`);
+  console.log(`viewSpanSelect currentYear=${currentYear}, currentMonth=${currentMonth}`);
   loadAssignments(currentYear, currentMonth);
 });
 
@@ -258,8 +258,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 現在の年と月を取得
   const now = new Date();
-  let currentYear = now.getFullYear();
-  let currentMonth = now.getMonth();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
 
   // 年のオプションを追加
   for (let i = currentYear - 10; i <= currentYear + 10; i++) {
