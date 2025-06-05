@@ -56,7 +56,7 @@ async function loadAssignments(year, month) {
 
     for (let d = 1; d <= days; d += stepDays) {
       const cellDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), d);
-      const label = `${cellDate.getMonth() + 1}/${cellDate.getDate()}`;
+      const label = `${cellDate.getFullYear()}/${cellDate.getMonth() + 1}/${cellDate.getDate()}`;
       headerRow.innerHTML += `<th>${label}</th>`;
       displayDates.push(cellDate);
     }
@@ -84,7 +84,9 @@ async function loadAssignments(year, month) {
     const crewName = crewGroup[0].crew_name; // crew_idごとに最初の名前を取得
 
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${crewName}</td>`; // crew_nameを一度だけ表示
+    const latestShip = crewGroup[crewGroup.length - 1].ship_name || '';
+    row.innerHTML = `<td>${crewName}</td><td>${latestShip}</td>`;
+
 
     displayDates.forEach(cellDate => {
       const cell = document.createElement("td");
