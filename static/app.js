@@ -8,6 +8,10 @@ const shipColors = {};
 let shipList = [];
 let draggedAssignment = null;
 let draggedType = null;
+// グローバル変数として viewSpan を宣言
+let viewSpan = 1;  // デフォルトは1ヶ月表示
+let currentYear;
+let currentMonth;
 
 async function loadShipColors() {
   const res = await fetch("/ships");
@@ -28,10 +32,7 @@ async function loadShipColors() {
     });
   }
 }
-// グローバル変数として viewSpan を宣言
-let viewSpan = 1;  // デフォルトは1ヶ月表示
-let currentYear;
-let currentMonth;
+
 
 async function loadAssignments(year, month) {
   console.log(`loadAssignments call`);
@@ -312,7 +313,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     await loadAssignments(currentYear, currentMonth);
   });
-  
+
   document.getElementById("reloadBtn").addEventListener("click", () => {
     const year = parseInt(document.getElementById("yearSelect").value, 10);
     const month = parseInt(document.getElementById("monthSelect").value, 10);
