@@ -48,25 +48,26 @@ async function loadAssignments(year, month) {
   const headerRow = document.createElement("tr");
   headerRow.innerHTML = `<th>船員名</th><th>船名</th>`;
 
-  const displayDates = []; // 表示用の日付保持
+  const displayDates = [];
 
   for (let offset = 0; offset < viewSpan; offset++) {
-    //const tempDate = new Date(year, month + offset, 1);
     const tempMonth = month + offset;
-    tempDate.setMonth(month + offset);
     const offsetYear = year + Math.floor(tempMonth / 12);
     const offsetMonth = tempMonth % 12;
     const days = getDaysInMonth(offsetYear, offsetMonth);
+
     console.log(`month offset=${offset}, Y=${offsetYear}, M=${offsetMonth}, days=${days}`);
 
     for (let d = 1; d <= days; d += stepDays) {
-      const cellDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), d);
+      const cellDate = new Date(offsetYear, offsetMonth, d);
       const label = `${cellDate.getFullYear()}/${cellDate.getMonth() + 1}/${cellDate.getDate()}`;
       headerRow.innerHTML += `<th>${label}</th>`;
       displayDates.push(cellDate);
     }
   }
+
   console.log("displayDates count:", displayDates.length);
+
 
   tableHead.appendChild(headerRow);
 
