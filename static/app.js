@@ -312,6 +312,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     await loadAssignments(currentYear, currentMonth);
   });
+  
+  document.getElementById("reloadBtn").addEventListener("click", () => {
+    const year = parseInt(document.getElementById("yearSelect").value, 10);
+    const month = parseInt(document.getElementById("monthSelect").value, 10);
+
+    if (!isNaN(year) && !isNaN(month)) {
+      loadAssignments(year, month);
+    } else {
+      console.warn("年または月の選択値が不正です");
+    }
+  });
 
   // カラー設定の読み込み
   await loadShipColors();
