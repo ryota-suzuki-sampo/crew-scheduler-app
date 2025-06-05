@@ -36,7 +36,8 @@ async function loadShipColors() {
 
 async function loadAssignments(year, month) {
   console.log(`loadAssignments call`);
-
+  console.log(`loadAssignments year=${year}, month=${month}`);
+  
   const tableHead = document.querySelector("#assignment-table thead");
   const tableBody = document.querySelector("#assignment-table-body");
   if (!tableHead || !tableBody) return;
@@ -142,6 +143,7 @@ document.getElementById("prevBtn").addEventListener("click", () => {
     currentMonth = 11;
     currentYear--;
   }
+  console.log(`prevBtn currentYear=${currentYear}, currentMonth=${currentMonth}`);
   loadAssignments(currentYear, currentMonth);
 });
 
@@ -151,16 +153,16 @@ document.getElementById("nextBtn").addEventListener("click", () => {
     currentMonth = 0;
     currentYear++;
   }
+  console.log(`nextBtn currentYear=${currentYear}, currentMonth=${currentMonth}`);
   loadAssignments(currentYear, currentMonth);
 });
 
 document.getElementById("viewSpanSelect").addEventListener("change", e => {
   viewSpan = parseInt(e.target.value, 10);
+console.log(`viewSpanSelect currentYear=${currentYear}, currentMonth=${currentMonth}`);
   loadAssignments(currentYear, currentMonth);
 });
 
-// 初回読み込み
-//loadAssignments(currentYear, currentMonth);
 function parseUTCDateStringAsLocalDate(dateString) {
     if (!dateString) return null;
     // YYYY-MM-DD を想定
@@ -239,6 +241,7 @@ async function handleDrop(dropDate) {
     //location.reload();
     const year = parseInt(document.getElementById("yearSelect").value);
     const month = parseInt(document.getElementById("monthSelect").value);
+    console.log(`handleDrop year=${year}, month=${month}`);
     await loadAssignments(year, month);
     draggedAssignment = null;
     draggedType = null;
@@ -294,26 +297,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadAssignments(currentYear, currentMonth);
   });
 
-  // "前へ" ボタンが押されたとき
-  document.getElementById("prevBtn").addEventListener("click", async () => {
-    currentMonth -= parseInt(viewSel.value);
-    if (currentMonth < 0) {
-      currentYear -= 1;
-      currentMonth += 12;
-    }
-    await loadAssignments(currentYear, currentMonth);
-  });
-
-  // "次へ" ボタンが押されたとき
-  document.getElementById("nextBtn").addEventListener("click", async () => {
-    currentMonth += parseInt(viewSel.value);
-    if (currentMonth > 11) {
-      currentYear += 1;
-      currentMonth -= 12;
-    }
-    await loadAssignments(currentYear, currentMonth);
-  });
-
   document.getElementById("reloadBtn").addEventListener("click", () => {
     const year = parseInt(document.getElementById("yearSelect").value, 10);
     const month = parseInt(document.getElementById("monthSelect").value, 10);
@@ -328,6 +311,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // カラー設定の読み込み
   await loadShipColors();
   // 初回カレンダー表示
+  console.log(`reloadBtn currentYear=${currentYear}, currentMonth=${currentMonth}`);
   await loadAssignments(currentYear, currentMonth);
 });
 
