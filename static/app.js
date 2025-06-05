@@ -51,7 +51,9 @@ async function loadAssignments(year, month) {
   const displayDates = []; // 表示用の日付保持
 
   for (let offset = 0; offset < viewSpan; offset++) {
-    const tempDate = new Date(year, month + offset, 1);
+    //const tempDate = new Date(year, month + offset, 1);
+    const tempDate = new Date(year, 0, 1);
+    tempDate.setMonth(month + offset);
     const days = getDaysInMonth(tempDate.getFullYear(), tempDate.getMonth());
 
     for (let d = 1; d <= days; d += stepDays) {
@@ -61,7 +63,7 @@ async function loadAssignments(year, month) {
       displayDates.push(cellDate);
     }
   }
-
+  console.log("displayDates count:", displayDates.length);
   tableHead.appendChild(headerRow);
 
   // サーバーからデータを取得
